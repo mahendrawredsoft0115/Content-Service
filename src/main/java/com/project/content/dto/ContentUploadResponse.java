@@ -1,13 +1,19 @@
 package com.project.content.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.project.content.enums.Visibility;
+import lombok.*;
 
-@Data
+/**
+ * Response DTO for uploaded content.
+ */
+@Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class ContentUploadResponse {
     private String filename;
     private String url;
-    private String visibility;
+    private Visibility visibility;
     private String message;
 }
