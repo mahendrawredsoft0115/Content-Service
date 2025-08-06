@@ -1,7 +1,9 @@
 package com.project.content.service;
 
 import com.project.content.dto.ContentUploadResponse;
+import com.project.content.dto.ReportRequestDto;
 import com.project.content.entity.Content;
+import com.project.content.entity.Report;
 import com.project.content.enums.ContentType;
 import com.project.content.enums.FileType;
 import com.project.content.enums.Visibility;
@@ -9,6 +11,7 @@ import com.project.content.exception.AccessDeniedException;
 import com.project.content.exception.ContentNotFoundException;
 import com.project.content.exception.ResourceNotFoundException;
 import com.project.content.repository.ContentRepository;
+import com.project.content.repository.ReportRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,15 +37,19 @@ public class ContentService {
     private final ContentRepository contentRepository;
     private final UserAccessService userAccessService;
 
+    private final ReportRepository reportRepository;
+
+
     /**
      * Constructs ContentService with required dependencies.
      *
      * @param contentRepository Repository for accessing Content entity
      * @param userAccessService Service for validating user access to paid content
      */
-    public ContentService(ContentRepository contentRepository, UserAccessService userAccessService) {
+    public ContentService(ContentRepository contentRepository, UserAccessService userAccessService, ReportRepository reportRepository) {
         this.contentRepository = contentRepository;
         this.userAccessService = userAccessService;
+        this.reportRepository = reportRepository;
     }
 
     /**
@@ -204,4 +211,34 @@ public class ContentService {
         }
         return uploadFolder;
     }
+
+
+
+    /**
+     * Reports a specific content post based on the provided details in the DTO.
+     * <p>
+     * This method creates a {@link Report} entity using the information in {@link ReportRequestDto},
+     * sets the current timestamp as the report time, saves it in the database, and
+     * returns a success message.
+     * </p>
+     *
+     * <p><b>Note:</b> WebSocket event for notifying admin is pending implementation.</p>
+     *
+     * @param dto the report request data transfer object containing user ID, post ID, and reason
+     * @return a confirmation message indicating the report was successfully submitted
+     */
+    public String reportContent(ReportRequestDto dto) {
+        Report report = Report.builder()
+                .reportedBy(dto.getReportedBy())
+                .postId(dto.getPostId())
+                .reason(dto.getReason())
+                .reportedAt(LocalDateTime.now())
+                .build();
+
+        reportRepository.save(report);
+
+        // TODO: WebSocket hit pending for admin notification
+        return "Content reported successfully.";
+    }
+
 }
